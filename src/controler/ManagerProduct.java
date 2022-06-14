@@ -3,7 +3,8 @@ package controler;
 import Validate.ValidateProduct;
 import io.ReaderAndWriteProduct;
 import model.Product;
-import sort.SortByScore;
+import sort.SortByPriceDown;
+import sort.SortByPriceUp;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -15,6 +16,8 @@ public class ManagerProduct {
     ReaderAndWriteProduct readerAndWriteProduct = new ReaderAndWriteProduct();
 
     public void menu() {
+        System.out.println("");
+        System.out.println("");
         System.out.println("===CHƯƠNG TRÌNH QUẢN LÝ SẢN PHẨM");
         System.out.println("1. hiển thị danh sách sản phẩm");
         System.out.println("2. Thêm mới sản phẩm");
@@ -50,7 +53,7 @@ public class ManagerProduct {
                 deleteProduct();
                 break;
             case 5:
-                sortByScore();
+                SortPrice();
                 break;
             case 6:
                 findProductMax();
@@ -75,6 +78,7 @@ public class ManagerProduct {
 
     public void addProduct(Product product) {
         products.add(product);
+        System.out.println("thêm thành công");
     }
 
     public Product createProduct() {
@@ -87,30 +91,88 @@ public class ManagerProduct {
     }
 
     public void editProduct() {
-        System.out.println("Nhập id cần sửa");
-        int id = Integer.parseInt(scanner.nextLine());
-        int index = validateProduct.getIndexId(id, products);
-        if (index != -1) {
-            products.set(index, createProduct());
-        } else {
-            System.err.println("id không tồn tại");
+        while (true) {
+            try {
+                System.out.println("Nhập id cần sửa");
+                int id = Integer.parseInt(scanner.nextLine());
+                int index = validateProduct.getIndexId(id, products);
+                if (index != -1) {
+                    products.set(index, createProduct1(id));
+                    return;
+                } else {
+                    System.out.println("Mã sản không tồn tại");
+                    System.out.println("Nhập y để tiếp tục , enter để huỷ ");
+                    String yes = scanner.nextLine();
+                    if (!yes.equals("y")) {
+                        break;
+                    }
+
+                }
+            } catch (Exception e) {
+                System.err.println("Bạn nhập sai định mã sản phẩm, mời nhập lại");
+            }
         }
     }
 
     public void deleteProduct() {
-        System.out.println("Nhập id cần xóa");
-        int id = Integer.parseInt(scanner.nextLine());
-        int index = validateProduct.getIndexId(id, products);
-        if (index != -1) {
-            products.remove(index);
-        } else {
-            System.err.println("id không tồn tại");
+        while (true) {
+            try {
+                System.out.println("Nhập id cần xóa");
+                int id = Integer.parseInt(scanner.nextLine());
+                int index = validateProduct.getIndexId(id, products);
+                if (index == -1) {
+                    System.out.println("Không tìm được sản phẩm với mã sản phẩm trên");
+                    System.out.println("Nhập y để tiếp tục");
+                    String yes = scanner.nextLine();
+                    if (!yes.equals("y")) {
+                        break;
+                    }
+                } else {
+                    System.out.println("Nhập y để xóa sản phẩm: " + products.get(index).getName() + "hoặc enter để huỷ" );
+                    String yes = scanner.nextLine();
+                    if (yes.equals("y")) {
+                        products.remove(index);
+                        break;
+                    } else {
+                        break;
+                    }
+
+                }
+            } catch (Exception e) {
+                System.err.println("Mời nhập lại");
+            }
         }
+
     }
 
-    public void sortByScore() {
-        products.sort(new SortByScore());
+    public void sortByPriceUP() {
+        products.sort(new SortByPriceUp());
+        System.out.println("sắp xếp tăng dần thành công");
+    }
+
+    public void sortByPriceDown() {
+        products.sort(new SortByPriceDown());
         System.out.println("sắp xếp giảm dần thành công");
+    }
+
+    public void SortPrice() {
+        System.out.println("Chọn 1 hoặc 2 để sắp xếp danh sách sản phẩm lần lượt là tăng dần và giảm dần:");
+       try {
+           int choice1 = Integer.parseInt(scanner.nextLine());
+           switch (choice1) {
+               case 1:
+                   sortByPriceUP();
+                   break;
+               case 2:
+                   sortByPriceDown();
+                   break;
+               default:
+                   throw new NumberFormatException();
+           }
+       }catch (NumberFormatException e){
+           System.err.println("nhâp sai");
+       }
+
     }
 
     public void reader() {
@@ -124,7 +186,7 @@ public class ManagerProduct {
     }
 
     public void findProductMax() {
-        sortByScore();
+        sortByPriceDown();
         System.out.println("sản phẩm có giá đắt nhất");
         for (Product pr : products) {
             if (pr.getPrice() == products.get(0).getPrice()) {
@@ -132,5 +194,13 @@ public class ManagerProduct {
             }
 
         }
+    }
+
+    public Product createProduct1(int id) {
+        String name = validateProduct.validateString("name :");
+        double price = validateProduct.validatePrice();
+        int quantity = validateProduct.validateQuantity();
+        String describe = validateProduct.validateString("describe :");
+        return new Product(id, name, price, quantity, describe);
     }
 }
